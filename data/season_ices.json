@@ -1,0 +1,39 @@
+{
+  "weeks": {
+    "1": {
+      "ices": [
+        {
+          "owner": "0xTSPoon",
+          "roster_id": 1,
+          "player": "Colston Loveland",
+          "position": "TE",
+          "nfl_team": "CHI",
+          "points": 0.0,
+          "player_id": "12517",
+          "game_detail": "Final",
+          "clock": "0:00",
+          "period": 4,
+          "urgency": 9999,
+          "game_name": "CHI @ CAR"
+        },
+        {
+          "owner": "zrek",
+          "roster_id": 5,
+          "player": "Houston Texans",
+          "position": "DEF",
+          "nfl_team": "HOU",
+          "points": -4.0,
+          "player_id": "HOU",
+          "game_detail": "Final",
+          "clock": "0:00",
+          "period": 4,
+          "urgency": 9999,
+          "game_name": "BUF @ HOU"
+        }
+      ],
+      "empty_slots": [],
+      "finalized": false
+    }
+  },
+  "last_updated": "2026-09-13T21:42:53.147267+00:00"
+}

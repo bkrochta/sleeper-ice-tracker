@@ -1,0 +1,82 @@
+name: Update Ice Tracker
+
+on:
+  schedule:
+    # Thursday Night Football (roughly 8pm–11:30pm ET)
+    - cron: '*/10 0-3 * * 5'        # Thu 8pm–11pm ET → Fri 00:00–03:00 UTC
+
+    # Sunday – every 10 minutes during the main window
+    # 12:00pm–11:50pm ET (16:00–03:50 UTC)
+    - cron: '*/10 16-23 * * 0'      # Sunday 12pm–7:50pm ET
+    - cron: '*/10 0-3 * * 1'        # Sunday 8pm–11:50pm ET
+
+    # Monday Night Football (8pm–12am ET)
+    - cron: '*/10 0-4 * * 2'        # Mon 8pm–12am ET
+
+    # Tuesday morning – lock the previous week
+    - cron: '0 12 * * 2'            # Tue 8am ET
+
+    # Light mid-week checks
+    - cron: '0 16 * * 3,4'          # Wed & Thu noon ET
+
+  workflow_dispatch:             # Manual trigger anytime
+
+permissions:
+  contents: write                # needed so we can commit history
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch ices and generate site
+        env:
+          LEAGUE_ID: ${{ vars.LEAGUE_ID }}
+        run: python scripts/fetch_ices.py
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Commit history (only when week is over)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ -f data/COMMIT_HISTORY ]; then
+            echo "Week is finalized – committing history"
+            git add data/season_ices.json
+            git commit -m "Lock week history – season ice totals updated"
+            git push
+            rm -f data/COMMIT_HISTORY
+          else
+            echo "Week still in progress – skipping history commit"
+          fi
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

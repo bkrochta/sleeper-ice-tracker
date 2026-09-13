@@ -1,0 +1,11 @@
+# Generated site (Actions builds this)
+site/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
