@@ -24,6 +24,10 @@ SITE_DIR.mkdir(exist_ok=True)
 DATA_DIR.mkdir(exist_ok=True)
 HISTORY_FILE = DATA_DIR / "season_ices.json"
 
+SLEEPER_TEAM_ABBR_TO_ESPN = {
+    "WAS": "WSH"
+}
+
 
 def get(url, params=None):
     r = requests.get(url, params=params, timeout=30)
@@ -107,6 +111,10 @@ def get_espn_games(week: int, season_type: int = 2):
     return team_to_game
 
 
+def sleeper_team_abbr_to_espn(sleeper_team_abbr: str):
+    return SLEEPER_TEAM_ABBR_TO_ESPN.get(sleeper_team_abbr, sleeper_team_abbr)
+
+
 def main():
     state = get(f"{BASE}/state/nfl")
     current_week = state.get("display_week") or state.get("week")
@@ -172,7 +180,7 @@ def main():
             name = (p.get("full_name") or f"{p.get('first_name', '')} {p.get('last_name', '')}").strip()
             name = name or f"Player {starter_id}"
             pos = p.get("position") or "?"
-            team = p.get("team") or "?"
+            team = sleeper_team_abbr_to_espn(p.get("team") or "?")
 
             game = team_games.get(team, {})
             game_state = game.get("state", "unknown")
