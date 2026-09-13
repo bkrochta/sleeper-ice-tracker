@@ -368,14 +368,16 @@ def generate_html(data):
           <h2>🚨 In Progress – Danger Zone</h2>
           <p class="sub">
           </p>
-          <table>
-            <thead>
-              <tr>
-                <th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th><th>Game Status</th>
-              </tr>
-            </thead>
-            <tbody>{prog_rows}</tbody>
-          </table>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th><th>Game Status</th>
+                </tr>
+              </thead>
+              <tbody>{prog_rows}</tbody>
+            </table>
+          </div>
         </div>
         """
     else:
@@ -452,7 +454,7 @@ def generate_html(data):
     details summary {{ font-weight: 600; font-size: 1.05rem; list-style: none; }}
     details summary::-webkit-details-marker {{ display: none; }}
     details[open] summary {{ margin-bottom: 1rem; }}
-    .table-wrap {{ overflow-x: auto; }}
+    .table-wrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
     table {{ width: 100%; border-collapse: collapse; font-size: 0.95rem; }}
     th, td {{ text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid #2a2a3a; }}
     th {{ color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }}
@@ -461,6 +463,15 @@ def generate_html(data):
     .total {{ color: var(--total); font-weight: 700; }}
     .empty {{ color: var(--muted); font-style: italic; }}
     footer {{ margin-top: 2rem; color: var(--muted); font-size: 0.85rem; text-align: center; }}
+    @media (max-width: 640px) {{
+      body {{ padding: 1rem 0.75rem; }}
+      h1 {{ font-size: 1.4rem; }}
+      h2 {{ font-size: 1rem; }}
+      .card {{ padding: 1rem; margin-bottom: 1rem; }}
+      th, td {{ padding: 0.4rem 0.5rem; font-size: 0.85rem; }}
+      th {{ font-size: 0.7rem; }}
+      .table-wrap {{ margin: 0 -1rem; padding: 0 1rem; }}
+    }}
   </style>
 </head>
 <body>
