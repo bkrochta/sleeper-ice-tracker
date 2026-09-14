@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ice Tracker – 2026</title>
+  <style>
+    :root {
+      --bg: #0f0f13; --card: #1a1a24; --text: #e8e8f0; --muted: #8888a0;
+      --accent: #ff4d6d; --zero: #ffcc00; --neg: #ff4d6d; --total: #4ade80;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.5;
+      padding: 1.5rem 1rem; max-width: 1050px; margin: 0 auto;
+    }
+    h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.2rem; margin-bottom: 0.75rem; }
+    .meta { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .card {
+      background: var(--card); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;
+    }
+    .card.danger { border: 1px solid #ff4d6d55; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    details.card { cursor: pointer; }
+    details summary { font-weight: 600; font-size: 1.05rem; list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary { margin-bottom: 1rem; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid #2a2a3a; }
+    th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
+    .zero { color: var(--zero); font-weight: 700; }
+    .neg { color: var(--neg); font-weight: 700; }
+    .total { color: var(--total); font-weight: 700; }
+    .empty { color: var(--muted); font-style: italic; }
+    footer { margin-top: 2rem; color: var(--muted); font-size: 0.85rem; text-align: center; }
+    @media (max-width: 640px) {
+      body { padding: 1rem 0.75rem; }
+      h1 { font-size: 1.4rem; }
+      h2 { font-size: 1rem; }
+      .card { padding: 1rem; margin-bottom: 1rem; }
+      th, td { padding: 0.4rem 0.5rem; font-size: 0.85rem; }
+      th { font-size: 0.7rem; }
+      .table-wrap { margin: 0 -1rem; padding: 0 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🧊 The Concord Boys Ice Tracker</h1>
+    <div class="meta" data-league-id="" data-current-week="" data-season-type="">
+        Season — · Week —<br>
+        Last updated: —
+    </div>
+
+    <div class="card" id="confirmed-card">
+        <h2>✅ Confirmed Ices (Games Final) <span id="confirmed-week" class="sub"></span></h2>
+        <div id="confirmed-wrap" class="table-wrap">
+          <table>
+            <thead><tr><th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th></tr></thead>
+            <tbody id="confirmed-tbody"><tr><td class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
+    </div>
+
+    <div class="card danger" id="inprogress-card">
+        <h2>🚨 In Progress – Danger Zone <span id="inprogress-week" class="sub"></span></h2>
+        <div id="inprogress-wrap" class="table-wrap">
+          <table>
+            <thead><tr><th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th><th>Game Status</th></tr></thead>
+            <tbody id="inprogress-tbody"><tr><td class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
+    </div>
+
+    <div class="card" id="leaderboard-card">
+      <h2>Season Ice Leaderboard</h2>
+      <div class="table-wrap">
+        <table>
+          <thead id="leaderboard-head"><tr><th>Owner</th></tr></thead>
+          <tbody id="leaderboard-body"><tr><td class='empty'>Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  <h2 style="margin: 1.5rem 0 0.75rem; color: var(--muted); font-size: 1rem;">Previous Weeks</h2>
+  <p class='empty'>No previous weeks yet</p>
+
+    <footer>
+        Confirmed ices only after game is final (via ESPN) · In-progress shown live · Sleeper + ESPN data
+    </footer>
+
+    <script src="live.js"></script>
+
+</body>
+</html>

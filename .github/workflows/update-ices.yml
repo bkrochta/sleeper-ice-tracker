@@ -2,22 +2,8 @@ name: Update Ice Tracker
 
 on:
   schedule:
-    # Thursday Night Football (roughly 8pm–11:30pm ET)
-    - cron: '*/10 0-3 * * 5'        # Thu 8pm–11pm ET → Fri 00:00–03:00 UTC
-
-    # Sunday – every 10 minutes during the main window
-    # 12:00pm–11:50pm ET (16:00–03:50 UTC)
-    - cron: '*/10 16-23 * * 0'      # Sunday 12pm–7:50pm ET
-    - cron: '*/10 0-3 * * 1'        # Sunday 8pm–11:50pm ET
-
-    # Monday Night Football (8pm–12am ET)
-    - cron: '*/10 0-4 * * 2'        # Mon 8pm–12am ET
-
     # Tuesday morning – lock the previous week
     - cron: '0 12 * * 2'            # Tue 8am ET
-
-    # Light mid-week checks
-    - cron: '0 16 * * 3,4'          # Wed & Thu noon ET
 
   workflow_dispatch:             # Manual trigger anytime
 
@@ -53,7 +39,7 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: docs
 
       - name: Commit history (only when week is over)
         run: |
@@ -62,8 +48,8 @@ jobs:
 
           if [ -f data/COMMIT_HISTORY ]; then
             echo "Week is finalized – committing history"
-            git add data/season_ices.json
-            git commit -m "Lock week history – season ice totals updated"
+            git add data/season_ices.json docs/data.json
+            git commit -m "Lock week history – season ice totals updated" || echo "No changes to commit"
             git push
             rm -f data/COMMIT_HISTORY
           else

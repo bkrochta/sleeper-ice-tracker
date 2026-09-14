@@ -40,4 +40,4 @@ export LEAGUE_ID=your_league_id_here
 python scripts/fetch_ices.py
 
 # 5. Open the dashboard
-open site/index.html              # Windows: start site/index.html
+open docs/index.html              # Windows: start docs/index.html
