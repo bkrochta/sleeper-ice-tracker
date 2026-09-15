@@ -5,6 +5,7 @@ Sleeper Ice Tracker + ESPN live game status
 - In-progress ices shown sorted by time remaining (redder = less time left)
 """
 
+import argparse
 import os
 import json
 import requests
@@ -22,6 +23,13 @@ DATA_DIR = Path("data")
 DOCS_DIR.mkdir(exist_ok=True)
 DATA_DIR.mkdir(exist_ok=True)
 HISTORY_FILE = DATA_DIR / "season_ices.json"
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Fetch Sleeper ices and generate data.json")
+    parser.add_argument("--write-history", action="store_true", help="Write history to file")
+
+    return parser.parse_args()
 
 
 def get(url, params=None):
@@ -43,19 +51,10 @@ def save_history(history):
         json.dump(history, f, indent=2)
 
 
-def main():
-    state = get(f"{BASE}/state/nfl")
-    current_week = state.get("display_week") or state.get("week")
-    season = state.get("season")
-    season_type = state.get("season_type", "regular")
-
-    print(f"Season {season} | Week {current_week} ({season_type})")
-
+def fetch_ices_for_week(week):
+    # Fetch matchups for the specified week and return confirmed ices and empty slots
     users = get(f"{BASE}/league/{LEAGUE_ID}/users")
-    user_map = {
-        u["user_id"]: u.get("display_name") or u.get("username") or "Unknown"
-        for u in users
-    }
+    user_map = {u["user_id"]: u.get("display_name") or u.get("username") or "Unknown" for u in users}
 
     rosters = get(f"{BASE}/league/{LEAGUE_ID}/rosters")
     roster_to_owner = {}
@@ -65,61 +64,11 @@ def main():
         roster_to_owner[r["roster_id"]] = name
 
     players = get(f"{BASE}/players/nfl")
-    history = load_history()
-
-    # For weekly runs we only use Sleeper data. The client-side `live.js` will
-    # perform live ESPN scoreboard checks for the current week in the browser.
-    # This script is intended to be scheduled once weekly (after games end)
-    # to finalize the previous week and record historical ices.
-    try:
-        current_week_int = int(current_week)
-    except Exception:
-        print(f"Unable to parse current_week='{current_week}' from Sleeper state; aborting finalization")
-        current_week_int = None
-
-    if not current_week_int or current_week_int <= 0:
-        print("No valid current week found; nothing to finalize")
-        finalized_weeks = sorted([int(w) for w in history.get("weeks", {}).keys()], reverse=True)
-        data = {
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "season": season,
-            "current_week": current_week,
-            "season_type": season_type,
-            "league_id": LEAGUE_ID,
-            "finalized_weeks": finalized_weeks,
-            "history": history["weeks"]
-        }
-        with open(DOCS_DIR / "data.json", "w") as f:
-            json.dump(data, f, indent=2)
-        print("Data written (no finalize):", DOCS_DIR / 'data.json')
-        return
-
-    finalize_week = current_week_int - 1
-    if finalize_week <= 0:
-        print("No previous week to finalize")
-        finalized_weeks = sorted([int(w) for w in history.get("weeks", {}).keys()], reverse=True)
-        data = {
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "season": season,
-            "current_week": current_week,
-            "season_type": season_type,
-            "league_id": LEAGUE_ID,
-            "finalized_weeks": finalized_weeks,
-            "history": history["weeks"]
-        }
-        with open(DOCS_DIR / "data.json", "w") as f:
-            json.dump(data, f, indent=2)
-        print("Data written (no finalize):", DOCS_DIR / 'data.json')
-        return
-
-    print(f"Attempting to finalize week {finalize_week}")
 
     confirmed = []
-    in_progress = []  # kept for compatibility; weekly run won't populate this
     empty_slots = []
 
-    # Fetch matchups for the week we want to finalize
-    matchups = get(f"{BASE}/league/{LEAGUE_ID}/matchups/{finalize_week}")
+    matchups = get(f"{BASE}/league/{LEAGUE_ID}/matchups/{week}")
 
     for m in matchups:
         roster_id = m["roster_id"]
@@ -129,20 +78,20 @@ def main():
 
         for i, starter_id in enumerate(starters):
             if not starter_id or starter_id in ("0", "null", None):
-                empty_slots.append({
-                    "owner": owner,
-                    "roster_id": roster_id,
-                    "slot": i + 1,
-                    "reason": "Empty starter slot"
-                })
+                empty_slots.append(
+                    {
+                        "owner": owner,
+                        "roster_id": roster_id,
+                        "slot": i + 1,
+                        "reason": "Empty starter slot",
+                    }
+                )
                 continue
 
             pts = players_points.get(str(starter_id))
             if pts is None:
                 pts = 0.0
 
-            # If points recorded (>0) then not an ice; otherwise treat as an
-            # ice for the purposes of weekly finalization.
             if pts > 0:
                 continue
 
@@ -160,63 +109,94 @@ def main():
                 "nfl_team": team,
                 "points": pts,
                 "player_id": str(starter_id),
-                "game_detail": "",
-                "clock": "",
-                "period": 0,
-                "urgency": 9999,
-                "game_name": ""
             }
             confirmed.append(entry)
 
-    in_progress.sort(key=lambda x: x.get("urgency", 9999))
+    return confirmed, empty_slots
 
-    # Only finalize the previous week once — skip if already finalized.
-    previous_finalized = history.get("weeks", {}).get(str(finalize_week), {}).get("finalized", False)
+
+def update_history(display_week, current_week, season, season_type):
+    print(f"Updating history for Season {season} | Week {current_week} ({season_type})")
+
+    history = load_history()
+    history["season"] = season
+    history["current_week"] = current_week
+    history["display_week"] = display_week
+    history["season_type"] = season_type
+
+    confirmed, empty_slots = fetch_ices_for_week(display_week)
+
+    history["weeks"][str(display_week)] = {
+        "ices": confirmed + empty_slots,
+        "empty_slots": empty_slots,
+        "finalized": True,
+    }
+    save_history(history)
     flag_file = DATA_DIR / "COMMIT_HISTORY"
-    if previous_finalized:
-        print(f"Week {finalize_week} already finalized; no changes")
-        # Still write docs data.json so client has up-to-date metadata
-        finalized_weeks = sorted([int(w) for w in history.get("weeks", {}).keys()], reverse=True)
-        data = {
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "season": season,
-            "current_week": current_week,
-            "season_type": season_type,
-            "league_id": LEAGUE_ID,
-            "finalized_weeks": finalized_weeks,
-            "history": history["weeks"]
-        }
-        with open(DOCS_DIR / "data.json", "w") as f:
-            json.dump(data, f, indent=2)
-        print("Data written (no finalize):", DOCS_DIR / 'data.json')
+    flag_file.write_text("yes")
+    print(f"Week {display_week} finalized → will commit history")
+
+    # Write updated docs data.json (history + metadata)
+    finalized_weeks = sorted([int(w) for w in history.get("weeks", {}).keys()], reverse=True)
+    data = {
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "season": season,
+        "current_week": current_week,
+        "display_week": display_week,
+        "season_type": season_type,
+        "league_id": LEAGUE_ID,
+        "finalized_weeks": finalized_weeks,
+        "history": history["weeks"],
+    }
+    with open(DOCS_DIR / "data.json", "w") as f:
+        json.dump(data, f, indent=2)
+    print("Data written:", DOCS_DIR / "data.json")
+
+
+def update_current_week():
+    # Fetch the latest state from Sleeper and update the local history file for the current week
+    sleeper_state = get(f"{BASE}/state/nfl")
+    display_week = sleeper_state.get("display_week")
+    current_week = sleeper_state.get("week")
+    season = sleeper_state.get("season")
+    season_type = sleeper_state.get("season_type", "regular")
+
+    print(f"Updating current week for Season {season} | Week {current_week} ({season_type})")
+
+    history = load_history()
+
+    history["season"] = season
+    history["current_week"] = current_week
+    history["display_week"] = display_week
+    history["season_type"] = season_type
+
+    save_history(history)
+
+    print(f"Current week updated: {HISTORY_FILE}")
+
+
+def main():
+    args = parse_args()
+    sleeper_state = get(f"{BASE}/state/nfl")
+    display_week = sleeper_state.get("display_week")
+
+    current_week = sleeper_state.get("week")
+    season = sleeper_state.get("season")
+    season_type = sleeper_state.get("season_type", "regular")
+
+    print(f"Season {season} | Week {current_week} ({season_type})")
+
+    if display_week < current_week:
+        update_history(display_week, current_week, season, season_type)
+    elif args.write_history:
+        for week in range(1, current_week):
+            update_history(week, current_week, season, season_type)
+    elif display_week == current_week:
+        update_current_week(display_week, current_week, season, season_type)
+        return
     else:
-        # Finalize: persist this single week into history and mark finalized
-        history["weeks"][str(finalize_week)] = {
-            "ices": confirmed + empty_slots,
-            "empty_slots": empty_slots,
-            "finalized": True
-        }
-        save_history(history)
-        flag_file.write_text("yes")
-        print(f"Week {finalize_week} finalized → will commit history")
-
-        # Write updated docs data.json (history + metadata)
-        finalized_weeks = sorted([int(w) for w in history.get("weeks", {}).keys()], reverse=True)
-        data = {
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "season": season,
-            "current_week": current_week,
-            "season_type": season_type,
-            "league_id": LEAGUE_ID,
-            "finalized_weeks": finalized_weeks,
-            "history": history["weeks"]
-        }
-        with open(DOCS_DIR / "data.json", "w") as f:
-            json.dump(data, f, indent=2)
-        print("Data written:", DOCS_DIR / 'data.json')
-
-    # The script's writes above have updated `docs/data.json` and history as
-    # needed. No further server-side leaderboard computation is performed.
+        print("Uknown state, quitting...")
+        return
 
 
 if __name__ == "__main__":

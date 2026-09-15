@@ -2,8 +2,9 @@ name: Update Ice Tracker
 
 on:
   schedule:
-    # Tuesday morning – lock the previous week
-    - cron: '0 12 * * 2'            # Tue 8am ET
+    # Run on Tuesday 9am ET and Wednesday 7am ET (UTC times shown)
+    - cron: '0 13 * * 2'            # Tue 9am ET -> 13:00 UTC
+    - cron: '0 11 * * 3'            # Wed 7am ET -> 11:00 UTC
 
   workflow_dispatch:             # Manual trigger anytime
 

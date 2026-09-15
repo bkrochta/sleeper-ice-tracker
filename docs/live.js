@@ -125,13 +125,14 @@ const Live = (function(){
     return '';
   }
 
-  function renderLeaderboard(siteData, confirmed, inProgress, pendingEmpty, currentWeek){
+  function renderLeaderboard(siteData, confirmed, inProgress, pendingEmpty, currentWeek, rosterToOwner){
     const history = (siteData && siteData.history) || {};
     const finalizedWeeks = (siteData && siteData.finalized_weeks) || Object.keys(history).map(x=>parseInt(x,10));
     // ensure currentWeek is present in header (as provisional)
     const weeksSet = new Set(finalizedWeeks.map(Number));
     if(currentWeek) weeksSet.add(Number(currentWeek));
-    const weeks = Array.from(weeksSet).sort((a,b)=>b-a);
+    // Order weeks ascending so W1 appears on the left and Total remains at right
+    const weeks = Array.from(weeksSet).sort((a,b)=>a-b);
 
     // build counts from history
     const counts = {};
@@ -163,15 +164,47 @@ const Live = (function(){
       head.innerHTML = `<tr>${ths}</tr>`;
     }
 
+    // Ensure all owners appear in the leaderboard (include roster owners)
+    const ownersSet = new Set(Object.keys(counts));
+    if(rosterToOwner){ Object.values(rosterToOwner).forEach(o=> ownersSet.add(o)); }
+    // Initialize missing counts to zero
+    Array.from(ownersSet).forEach(owner=>{ counts[owner] = counts[owner] || {}; counts[owner].total = counts[owner].total || 0; });
+
     // build rows sorted by total
-    const owners = Object.keys(counts).sort((a,b)=> (counts[b].total||0)-(counts[a].total||0));
+    const owners = Array.from(ownersSet).sort((a,b)=> (counts[b].total||0)-(counts[a].total||0));
     const rows = owners.map(owner=>{
-      const rowCells = weeks.map(w=>`<td>${counts[owner][w]||'–'}</td>`).join('');
+      const rowCells = weeks.map(w=>`<td>${counts[owner][w]||0}</td>`).join('');
       return `<tr><td><strong>${owner}</strong></td>${rowCells}<td class='total'>${counts[owner].total||0}</td></tr>`;
     }).join('') || `<tr><td colspan='20' class='empty'>No ices yet</td></tr>`;
 
     const body = document.getElementById('leaderboard-body');
     if(body) body.innerHTML = rows;
+  }
+
+  function renderHistory(siteData, displayWeek, isCurrentDisplay, currentWeek){
+    const history = (siteData && siteData.history) || {};
+    const container = document.getElementById('history-wrap');
+    if(!container) return;
+    const weeks = Object.keys(history).map(x=>parseInt(x,10)).sort((a,b)=>b-a);
+    // If the page is showing the live/current week, exclude the displayWeek
+    // from previous-weeks listing; otherwise include the displayWeek as it is
+    // a past week the user intentionally requested.
+    const prevWeeks = weeks.filter(w => isCurrentDisplay ? !(displayWeek && Number(w) === Number(displayWeek)) : true).sort((a,b)=>b-a);
+    if(!prevWeeks.length){ container.innerHTML = `<p class="empty">No previous weeks yet</p>`; return; }
+
+    const html = prevWeeks.map(w=>{
+      const wk = String(w);
+      const wkdata = history[wk] || {};
+      const ices = wkdata.ices || [];
+      if(!ices.length) return `<div class="card"><h3>Week ${w}</h3><p class="empty">No confirmed ices</p></div>`;
+      const rows = ices.map(i=>{
+        const cls = (i.points||0) < 0 ? 'neg' : 'zero';
+        return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td></tr>`;
+      }).join('');
+      return `<div class="card"><h3 style="margin-bottom:0.5rem;">Week ${w}</h3><div class="table-wrap"><table><thead><tr><th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    }).join('');
+
+    container.innerHTML = html;
   }
 
   async function init(){
@@ -184,39 +217,54 @@ const Live = (function(){
 
       const meta = document.querySelector('.meta');
       const LEAGUE_ID = (siteData && siteData.league_id) || (meta && meta.dataset.leagueId) || '';
-      const week = parseInt((siteData && siteData.current_week) || (meta && meta.dataset.currentWeek) || '0',10);
+      const displayWeek = parseInt((siteData && siteData.display_week) || (meta && meta.dataset.currentWeek) || '0',10);
+      const currentWeek = parseInt((siteData && siteData.current_week) || (meta && meta.dataset.currentWeek) || '0',10);
       const seasonType = (siteData && siteData.season_type) || (meta && meta.dataset.seasonType) || 'regular';
+      const isCurrentDisplay = (displayWeek && currentWeek && Number(displayWeek) === Number(currentWeek));
 
       // Update meta display from committed data if available
       if(meta && siteData && siteData.season){
         meta.dataset.leagueId = siteData.league_id || '';
-        meta.dataset.currentWeek = siteData.current_week || '';
+        meta.dataset.currentWeek = siteData.display_week || '';
         meta.dataset.seasonType = siteData.season_type || '';
-        meta.innerHTML = `Season ${siteData.season} · Week ${siteData.current_week}<br>Last updated: ${(siteData.updated_at||'').replace('T',' ').slice(0,19)+' UTC'}`;
+        meta.innerHTML = `Season ${siteData.season} · Week ${siteData.display_week}<br>Last updated: ${(siteData.updated_at||'').replace('T',' ').slice(0,19)+' UTC'}`;
       }
 
       // Update week display in section headings
       const confirmedWeekSpan = document.getElementById('confirmed-week');
       const inprogressWeekSpan = document.getElementById('inprogress-week');
-      if(confirmedWeekSpan) confirmedWeekSpan.textContent = `— Week ${week}`;
-      if(inprogressWeekSpan) inprogressWeekSpan.textContent = `— Week ${week}`;
+      if(confirmedWeekSpan) confirmedWeekSpan.textContent = `— Week ${displayWeek}`;
+      if(inprogressWeekSpan) inprogressWeekSpan.textContent = `— Week ${displayWeek}`;
 
       const { userMap, rosterToOwner, players } = await fetchSleeperBasics(LEAGUE_ID);
-      const matchups = await jfetch(`${BASE}/league/${LEAGUE_ID}/matchups/${week}`);
-      const teamGames = await fetchEspnGames(week, seasonType);
+      const matchups = await jfetch(`${BASE}/league/${LEAGUE_ID}/matchups/${displayWeek}`);
+      const teamGames = await fetchEspnGames(displayWeek, seasonType);
 
       const { confirmed, inProgress, pendingEmpty } = computeEntries(matchups, rosterToOwner, players, teamGames);
 
       updateMetaTimestamp();
 
-      const confHtml = (confirmed||[]).map(i=>{ const cls = i.points<0?'neg':'zero'; return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td></tr>`; }).join('');
-      // Render confirmed: if empty show a friendly message
       const confirmedWrap = document.getElementById('confirmed-wrap');
+      // If the display week is a past week (less than currentWeek), prefer
+      // using the committed `siteData.history` for the confirmed ices instead
+      // of computing them from live matchups which may not return historical
+      // values.
+      const isPastDisplay = (displayWeek && currentWeek && Number(displayWeek) < Number(currentWeek));
+      let confRows = '';
+      if(isPastDisplay){
+        const hist = (siteData && siteData.history && siteData.history[String(displayWeek)]) || {};
+        const histIces = hist.ices || [];
+        confRows = histIces.map(i=>{ const cls = (i.points||0) < 0 ? 'neg' : 'zero'; return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td></tr>`; }).join('');
+      } else {
+        confRows = (confirmed||[]).map(i=>{ const cls = i.points<0?'neg':'zero'; return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td></tr>`; }).join('');
+      }
       if(confirmedWrap){
-        if(confHtml && confHtml.length){
-          confirmedWrap.innerHTML = `<table><thead><tr><th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th></tr></thead><tbody id="confirmed-tbody">${confHtml}</tbody></table>`;
+        if(confRows && confRows.length){
+          const congrats = isPastDisplay ? `<p class="sub">Congratulations to this week's winners!</p>` : '';
+          confirmedWrap.innerHTML = `${congrats}<table><thead><tr><th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th></tr></thead><tbody id="confirmed-tbody">${confRows}</tbody></table>`;
         } else {
-          confirmedWrap.innerHTML = `<p class="empty">None yet</p>`;
+          if(isPastDisplay) confirmedWrap.innerHTML = `<p class="empty">No winners this week</p>`;
+          else confirmedWrap.innerHTML = `<p class="empty">None yet</p>`;
         }
       }
 
@@ -225,15 +273,27 @@ const Live = (function(){
       const pendingHtml = (pendingEmpty||[]).map(e=>`<tr><td>${e.owner}</td><td colspan="3"><em>Empty starter slot #${e.slot}</em></td><td class="zero">0</td><td style="background: rgba(255, 200, 30, 0.25);">Pending – fills when week ends</td></tr>`).join('');
       const inprogressWrap = document.getElementById('inprogress-wrap');
       if(inprogressWrap){
-        if(inprogHtml.length || pendingHtml.length){
-          inprogressWrap.innerHTML = `<table><thead><tr><th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th><th>Game Status</th></tr></thead><tbody id="inprogress-tbody">${inprogHtml+pendingHtml}</tbody></table>`;
+        const inprogressCard = document.getElementById('inprogress-card');
+        // If this page is showing the live/current week, only show the in-progress
+        // section when there are in-progress or pending entries. If the display
+        // week is not the current week, hide the entire in-progress card.
+        if(isCurrentDisplay){
+          if(inprogHtml.length || pendingHtml.length){
+            if(inprogressCard) inprogressCard.style.display = '';
+            inprogressWrap.innerHTML = `<table><thead><tr><th>Owner</th><th>Player</th><th>Pos</th><th>Team</th><th>Pts</th><th>Game Status</th></tr></thead><tbody id="inprogress-tbody">${inprogHtml+pendingHtml}</tbody></table>`;
+          } else {
+            if(inprogressCard) inprogressCard.style.display = 'none';
+          }
         } else {
-          inprogressWrap.innerHTML = `<p class="empty">None yet</p>`;
+          if(inprogressCard) inprogressCard.style.display = 'none';
         }
       }
 
-      // Render leaderboard by merging historical finalized weeks with this current-week entries
-      renderLeaderboard(siteData, confirmed, inProgress, pendingEmpty, week);
+      // Render leaderboard by merging historical finalized weeks with current-week confirmed entries
+      renderLeaderboard(siteData, confirmed, inProgress, pendingEmpty, displayWeek, rosterToOwner);
+
+      // Render previous weeks' confirmed ices (history)
+      renderHistory(siteData, displayWeek, isCurrentDisplay, currentWeek);
 
     }catch(e){ console.warn('live init failed',e); }
   }
