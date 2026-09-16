@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-15T22:53:32.938569+00:00",
+  "updated_at": "2026-09-16T03:03:27.939954+00:00",
   "season": "2026",
   "current_week": 2,
   "display_week": 1,
@@ -18,7 +18,8 @@
           "position": "TE",
           "nfl_team": "CHI",
           "points": 0.0,
-          "player_id": "12517"
+          "player_id": "12517",
+          "completed": false
         },
         {
           "owner": "pathenny",
@@ -27,7 +28,8 @@
           "position": "K",
           "nfl_team": "DAL",
           "points": 0.0,
-          "player_id": "11533"
+          "player_id": "11533",
+          "completed": false
         },
         {
           "owner": "zrek",
@@ -36,7 +38,8 @@
           "position": "DEF",
           "nfl_team": "HOU",
           "points": -4.0,
-          "player_id": "HOU"
+          "player_id": "HOU",
+          "completed": false
         },
         {
           "owner": "kevinchiat",
@@ -45,7 +48,8 @@
           "position": "DEF",
           "nfl_team": "LAC",
           "points": 0.0,
-          "player_id": "LAC"
+          "player_id": "LAC",
+          "completed": true
         }
       ],
       "empty_slots": [],

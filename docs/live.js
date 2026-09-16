@@ -134,12 +134,24 @@ const Live = (function(){
     // Order weeks ascending so W1 appears on the left and Total remains at right
     const weeks = Array.from(weeksSet).sort((a,b)=>a-b);
 
-    // build counts from history
+    // build counts and completion status from history
     const counts = {};
     Object.entries(history||{}).forEach(([wk, wkdata])=>{
       const wnum = parseInt(wk,10);
-      (wkdata.ices||[]).forEach(ice=>{ counts[ice.owner] = counts[ice.owner] || {}; counts[ice.owner][wnum] = (counts[ice.owner][wnum]||0)+1; counts[ice.owner].total = (counts[ice.owner].total||0)+1; });
-      (wkdata.empty_slots||[]).forEach(e=>{ counts[e.owner] = counts[e.owner] || {}; counts[e.owner][wnum] = (counts[e.owner][wnum]||0)+1; counts[e.owner].total = (counts[e.owner].total||0)+1; });
+      (wkdata.ices||[]).forEach(ice=>{ 
+        counts[ice.owner] = counts[ice.owner] || {}; 
+        counts[ice.owner][wnum] = counts[ice.owner][wnum] || {count: 0, completed: 0}; 
+        counts[ice.owner][wnum].count += 1; 
+        if(ice.completed) counts[ice.owner][wnum].completed += 1;
+        counts[ice.owner].total = (counts[ice.owner].total||0) + 1; 
+        counts[ice.owner].totalCompleted = (counts[ice.owner].totalCompleted||0) + (ice.completed ? 1 : 0);
+      });
+      (wkdata.empty_slots||[]).forEach(e=>{ 
+        counts[e.owner] = counts[e.owner] || {}; 
+        counts[e.owner][wnum] = counts[e.owner][wnum] || {count: 0, completed: 0}; 
+        counts[e.owner][wnum].count += 1; 
+        counts[e.owner].total = (counts[e.owner].total||0) + 1; 
+      });
     });
 
     // Add current-week counts only for confirmed (games over) entries.
@@ -152,7 +164,8 @@ const Live = (function(){
       currentConfirmed.forEach(e=>{
         const owner = e.owner;
         counts[owner] = counts[owner] || {};
-        counts[owner][currentWeek] = (counts[owner][currentWeek]||0) + 1;
+        counts[owner][currentWeek] = counts[owner][currentWeek] || {count: 0, completed: 0};
+        counts[owner][currentWeek].count += 1;
         counts[owner].total = (counts[owner].total||0) + 1;
       });
     }
@@ -168,13 +181,37 @@ const Live = (function(){
     const ownersSet = new Set(Object.keys(counts));
     if(rosterToOwner){ Object.values(rosterToOwner).forEach(o=> ownersSet.add(o)); }
     // Initialize missing counts to zero
-    Array.from(ownersSet).forEach(owner=>{ counts[owner] = counts[owner] || {}; counts[owner].total = counts[owner].total || 0; });
+    Array.from(ownersSet).forEach(owner=>{ counts[owner] = counts[owner] || {}; counts[owner].total = counts[owner].total || 0; counts[owner].totalCompleted = counts[owner].totalCompleted || 0; });
+
+    // Helper to compute cell text color based on completion
+    const getCompletionStyle = (owner, week)=>{
+      const wk = counts[owner][week];
+      if(!wk || wk.count === 0) return ''; // 0 = default text color
+      const pct = wk.completed / wk.count;
+      if(pct === 1) return 'color: #4ade80;'; // green (all completed)
+      if(pct > 0) return 'color: #eab308;'; // yellow (some completed)
+      return 'color: #ef4444;'; // red (none completed)
+    };
+
+    // Helper to get total text color
+    const getTotalStyle = (owner)=>{
+      const tot = counts[owner].total || 0;
+      if(tot === 0) return ''; // 0 = default text color
+      if((counts[owner].totalCompleted || 0) === tot) return 'color: #4ade80;'; // all completed = green
+      if((counts[owner].totalCompleted || 0) > 0) return 'color: #eab308;'; // some completed = yellow
+      return 'color: #ef4444;'; // any incomplete = red
+    };
 
     // build rows sorted by total
     const owners = Array.from(ownersSet).sort((a,b)=> (counts[b].total||0)-(counts[a].total||0));
     const rows = owners.map(owner=>{
-      const rowCells = weeks.map(w=>`<td>${counts[owner][w]||0}</td>`).join('');
-      return `<tr><td><strong>${owner}</strong></td>${rowCells}<td class='total'>${counts[owner].total||0}</td></tr>`;
+      const rowCells = weeks.map(w=>{
+        const cnt = counts[owner][w] ? counts[owner][w].count : 0;
+        const style = getCompletionStyle(owner, w);
+        return `<td style="${style}">${cnt}</td>`;
+      }).join('');
+      const totalStyle = getTotalStyle(owner);
+      return `<tr><td><strong>${owner}</strong></td>${rowCells}<td class='total' style="${totalStyle}">${counts[owner].total||0}</td></tr>`;
     }).join('') || `<tr><td colspan='20' class='empty'>No ices yet</td></tr>`;
 
     const body = document.getElementById('leaderboard-body');
@@ -256,7 +293,7 @@ const Live = (function(){
         const histIces = hist.ices || [];
         confRows = histIces.map(i=>{ const cls = (i.points||0) < 0 ? 'neg' : 'zero'; return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td></tr>`; }).join('');
       } else {
-        confRows = (confirmed||[]).map(i=>{ const cls = i.points<0?'neg':'zero'; return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td></tr>`; }).join('');
+        confRows = (confirmed||[]).map(i=>{ const cls = (i.points||0) < 0 ? 'neg' : 'zero'; return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td></tr>`; }).join('');
       }
       if(confirmedWrap){
         if(confRows && confRows.length){
@@ -268,7 +305,7 @@ const Live = (function(){
         }
       }
 
-      const inprogHtml = (inProgress||[]).map(i=>{ const cls = i.points<0?'neg':'zero'; const detail = i.game_detail||i.clock||''; const style = computeStatusStyle(i); return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td><td style="${style}">${detail}</td></tr>`; }).join('');
+      const inprogHtml = (inProgress||[]).map(i=>{ const cls = (i.points||0) < 0 ? 'neg' : 'zero'; const detail = i.game_detail||i.clock||''; const style = computeStatusStyle(i); return `<tr><td>${i.owner}</td><td>${i.player}</td><td>${i.position}</td><td>${i.nfl_team}</td><td class="${cls}">${i.points}</td><td style="${style}">${detail}</td></tr>`; }).join('');
       // include pending empties as well
       const pendingHtml = (pendingEmpty||[]).map(e=>`<tr><td>${e.owner}</td><td colspan="3"><em>Empty starter slot #${e.slot}</em></td><td class="zero">0</td><td style="background: rgba(255, 200, 30, 0.25);">Pending – fills when week ends</td></tr>`).join('');
       const inprogressWrap = document.getElementById('inprogress-wrap');

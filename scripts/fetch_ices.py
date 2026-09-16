@@ -22,7 +22,7 @@ DOCS_DIR = Path("docs")
 DATA_DIR = Path("data")
 DOCS_DIR.mkdir(exist_ok=True)
 DATA_DIR.mkdir(exist_ok=True)
-HISTORY_FILE = DATA_DIR / "season_ices.json"
+DATA_FILE = DOCS_DIR / "data.json"
 
 
 def parse_args():
@@ -38,17 +38,31 @@ def get(url, params=None):
     return r.json()
 
 
-def load_history():
-    if HISTORY_FILE.exists():
-        with open(HISTORY_FILE) as f:
+def load_data():
+    """Load the unified data.json file or return a fresh structure."""
+    if DATA_FILE.exists():
+        with open(DATA_FILE) as f:
             return json.load(f)
-    return {"weeks": {}, "last_updated": None}
+    return {
+        "updated_at": None,
+        "season": None,
+        "current_week": None,
+        "display_week": None,
+        "season_type": "regular",
+        "league_id": LEAGUE_ID,
+        "finalized_weeks": [],
+        "history": {},
+    }
 
 
-def save_history(history):
-    history["last_updated"] = datetime.now(timezone.utc).isoformat()
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(history, f, indent=2)
+def save_data(data):
+    """Save the unified data.json file."""
+    data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    data["league_id"] = LEAGUE_ID
+    # Update finalized_weeks based on history keys
+    data["finalized_weeks"] = sorted([int(w) for w in data.get("history", {}).keys()])
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
 
 def fetch_ices_for_week(week):
@@ -109,6 +123,7 @@ def fetch_ices_for_week(week):
                 "nfl_team": team,
                 "points": pts,
                 "player_id": str(starter_id),
+                "completed": False,
             }
             confirmed.append(entry)
 
@@ -118,61 +133,40 @@ def fetch_ices_for_week(week):
 def update_history(display_week, current_week, season, season_type):
     print(f"Updating history for Season {season} | Week {current_week} ({season_type})")
 
-    history = load_history()
-    history["season"] = season
-    history["current_week"] = current_week
-    history["display_week"] = display_week
-    history["season_type"] = season_type
+    data = load_data()
+    data["season"] = season
+    data["current_week"] = current_week
+    data["display_week"] = display_week
+    data["season_type"] = season_type
 
     confirmed, empty_slots = fetch_ices_for_week(display_week)
 
-    history["weeks"][str(display_week)] = {
+    data["history"][str(display_week)] = {
         "ices": confirmed + empty_slots,
         "empty_slots": empty_slots,
         "finalized": True,
     }
-    save_history(history)
+    save_data(data)
     flag_file = DATA_DIR / "COMMIT_HISTORY"
     flag_file.write_text("yes")
     print(f"Week {display_week} finalized → will commit history")
-
-    # Write updated docs data.json (history + metadata)
-    finalized_weeks = sorted([int(w) for w in history.get("weeks", {}).keys()], reverse=True)
-    data = {
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-        "season": season,
-        "current_week": current_week,
-        "display_week": display_week,
-        "season_type": season_type,
-        "league_id": LEAGUE_ID,
-        "finalized_weeks": finalized_weeks,
-        "history": history["weeks"],
-    }
-    with open(DOCS_DIR / "data.json", "w") as f:
-        json.dump(data, f, indent=2)
-    print("Data written:", DOCS_DIR / "data.json")
+    print("Data written:", DATA_FILE)
 
 
-def update_current_week():
+def update_current_week(display_week, current_week, season, season_type):
     # Fetch the latest state from Sleeper and update the local history file for the current week
-    sleeper_state = get(f"{BASE}/state/nfl")
-    display_week = sleeper_state.get("display_week")
-    current_week = sleeper_state.get("week")
-    season = sleeper_state.get("season")
-    season_type = sleeper_state.get("season_type", "regular")
-
     print(f"Updating current week for Season {season} | Week {current_week} ({season_type})")
 
-    history = load_history()
+    data = load_data()
 
-    history["season"] = season
-    history["current_week"] = current_week
-    history["display_week"] = display_week
-    history["season_type"] = season_type
+    data["season"] = season
+    data["current_week"] = current_week
+    data["display_week"] = display_week
+    data["season_type"] = season_type
 
-    save_history(history)
+    save_data(data)
 
-    print(f"Current week updated: {HISTORY_FILE}")
+    print(f"Current week updated: {DATA_FILE}")
 
 
 def main():
@@ -195,7 +189,7 @@ def main():
         update_current_week(display_week, current_week, season, season_type)
         return
     else:
-        print("Uknown state, quitting...")
+        print("Unknown state, quitting...")
         return
 
 
