@@ -165,6 +165,8 @@ def update_current_week(display_week, current_week, season, season_type):
     data["season_type"] = season_type
 
     save_data(data)
+    flag_file = DATA_DIR / "COMMIT_HISTORY"
+    flag_file.write_text("yes")
 
     print(f"Current week updated: {DATA_FILE}")
 

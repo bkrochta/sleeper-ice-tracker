@@ -29,7 +29,7 @@
           "nfl_team": "DAL",
           "points": 0.0,
           "player_id": "11533",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "zrek",
