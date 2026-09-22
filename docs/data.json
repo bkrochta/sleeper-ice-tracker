@@ -1,12 +1,13 @@
 {
-  "updated_at": "2026-09-16T12:14:26.563964+00:00",
+  "updated_at": "2026-09-22T16:20:23.193669+00:00",
   "season": "2026",
-  "current_week": 2,
+  "current_week": 3,
   "display_week": 2,
   "season_type": "regular",
   "league_id": "1389722302718947328",
   "finalized_weeks": [
-    1
+    1,
+    2
   ],
   "history": {
     "1": {
@@ -50,6 +51,22 @@
           "points": 0.0,
           "player_id": "LAC",
           "completed": true
+        }
+      ],
+      "empty_slots": [],
+      "finalized": true
+    },
+    "2": {
+      "ices": [
+        {
+          "owner": "zrek",
+          "roster_id": 5,
+          "player": "DJ Moore",
+          "position": "WR",
+          "nfl_team": "BUF",
+          "points": -0.1,
+          "player_id": "4983",
+          "completed": false
         }
       ],
       "empty_slots": [],
