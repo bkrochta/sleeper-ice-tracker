@@ -40,7 +40,7 @@
           "nfl_team": "HOU",
           "points": -4.0,
           "player_id": "HOU",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "kevinchiat",
@@ -66,7 +66,7 @@
           "nfl_team": "BUF",
           "points": -0.1,
           "player_id": "4983",
-          "completed": false
+          "completed": true
         }
       ],
       "empty_slots": [],
