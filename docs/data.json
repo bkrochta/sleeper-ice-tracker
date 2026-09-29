@@ -1,13 +1,14 @@
 {
-  "updated_at": "2026-09-23T15:15:26.424571+00:00",
+  "updated_at": "2026-09-29T18:28:25.461128+00:00",
   "season": "2026",
-  "current_week": 3,
+  "current_week": 4,
   "display_week": 3,
   "season_type": "regular",
   "league_id": "1389722302718947328",
   "finalized_weeks": [
     1,
-    2
+    2,
+    3
   ],
   "history": {
     "1": {
@@ -67,6 +68,52 @@
           "points": -0.1,
           "player_id": "4983",
           "completed": true
+        }
+      ],
+      "empty_slots": [],
+      "finalized": true
+    },
+    "3": {
+      "ices": [
+        {
+          "owner": "pathenny",
+          "roster_id": 2,
+          "player": "Philadelphia Eagles",
+          "position": "DEF",
+          "nfl_team": "PHI",
+          "points": 0.0,
+          "player_id": "PHI",
+          "completed": false
+        },
+        {
+          "owner": "hcstone",
+          "roster_id": 4,
+          "player": "San Francisco 49ers",
+          "position": "DEF",
+          "nfl_team": "SF",
+          "points": 0.0,
+          "player_id": "SF",
+          "completed": false
+        },
+        {
+          "owner": "CEEJDUDE",
+          "roster_id": 7,
+          "player": "New England Patriots",
+          "position": "DEF",
+          "nfl_team": "NE",
+          "points": -1.0,
+          "player_id": "NE",
+          "completed": false
+        },
+        {
+          "owner": "kevinchiat",
+          "roster_id": 9,
+          "player": "Cincinnati Bengals",
+          "position": "DEF",
+          "nfl_team": "CIN",
+          "points": 0.0,
+          "player_id": "CIN",
+          "completed": false
         }
       ],
       "empty_slots": [],
