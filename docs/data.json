@@ -21,7 +21,7 @@
           "nfl_team": "CHI",
           "points": 0.0,
           "player_id": "12517",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "pathenny",
@@ -83,7 +83,7 @@
           "nfl_team": "PHI",
           "points": 0.0,
           "player_id": "PHI",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "hcstone",
@@ -93,7 +93,7 @@
           "nfl_team": "SF",
           "points": 0.0,
           "player_id": "SF",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "CEEJDUDE",
@@ -103,7 +103,7 @@
           "nfl_team": "NE",
           "points": -1.0,
           "player_id": "NE",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "kevinchiat",
@@ -113,7 +113,7 @@
           "nfl_team": "CIN",
           "points": 0.0,
           "player_id": "CIN",
-          "completed": false
+          "completed": true
         }
       ],
       "empty_slots": [],
