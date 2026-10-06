@@ -1,14 +1,15 @@
 {
-  "updated_at": "2026-09-30T16:37:29.851062+00:00",
+  "updated_at": "2026-10-06T18:47:57.465980+00:00",
   "season": "2026",
-  "current_week": 4,
+  "current_week": 5,
   "display_week": 4,
   "season_type": "regular",
   "league_id": "1389722302718947328",
   "finalized_weeks": [
     1,
     2,
-    3
+    3,
+    4
   ],
   "history": {
     "1": {
@@ -114,6 +115,42 @@
           "points": 0.0,
           "player_id": "CIN",
           "completed": true
+        }
+      ],
+      "empty_slots": [],
+      "finalized": true
+    },
+    "4": {
+      "ices": [
+        {
+          "owner": "pathenny",
+          "roster_id": 2,
+          "player": "Rashee Rice",
+          "position": "WR",
+          "nfl_team": "KC",
+          "points": 0.0,
+          "player_id": "10229",
+          "completed": false
+        },
+        {
+          "owner": "zrek",
+          "roster_id": 5,
+          "player": "Kenyon Sadiq",
+          "position": "TE",
+          "nfl_team": "NYJ",
+          "points": 0.0,
+          "player_id": "13330",
+          "completed": false
+        },
+        {
+          "owner": "kevinchiat",
+          "roster_id": 9,
+          "player": "Ladd McConkey",
+          "position": "WR",
+          "nfl_team": "LAC",
+          "points": 0.0,
+          "player_id": "11635",
+          "completed": false
         }
       ],
       "empty_slots": [],
