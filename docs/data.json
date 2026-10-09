@@ -140,7 +140,7 @@
           "nfl_team": "NYJ",
           "points": 0.0,
           "player_id": "13330",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "kevinchiat",
