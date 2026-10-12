@@ -130,7 +130,7 @@
           "nfl_team": "KC",
           "points": 0.0,
           "player_id": "10229",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "zrek",
@@ -150,7 +150,7 @@
           "nfl_team": "LAC",
           "points": 0.0,
           "player_id": "11635",
-          "completed": false
+          "completed": true
         }
       ],
       "empty_slots": [],
