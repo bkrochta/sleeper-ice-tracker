@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-10-07T17:37:56.717949+00:00",
+  "updated_at": "2026-10-13T19:45:33.434676+00:00",
   "season": "2026",
-  "current_week": 5,
+  "current_week": 6,
   "display_week": 5,
   "season_type": "regular",
   "league_id": "1389722302718947328",
@@ -9,7 +9,8 @@
     1,
     2,
     3,
-    4
+    4,
+    5
   ],
   "history": {
     "1": {
@@ -151,6 +152,22 @@
           "points": 0.0,
           "player_id": "11635",
           "completed": true
+        }
+      ],
+      "empty_slots": [],
+      "finalized": true
+    },
+    "5": {
+      "ices": [
+        {
+          "owner": "ice3",
+          "roster_id": 10,
+          "player": "Los Angeles Rams",
+          "position": "DEF",
+          "nfl_team": "LAR",
+          "points": 0.0,
+          "player_id": "LAR",
+          "completed": false
         }
       ],
       "empty_slots": [],
