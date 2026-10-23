@@ -168,7 +168,7 @@
           "nfl_team": "LAR",
           "points": 0.0,
           "player_id": "LAR",
-          "completed": false
+          "completed": true
         }
       ],
       "empty_slots": [],
@@ -204,7 +204,7 @@
           "nfl_team": "BAL",
           "points": 0.0,
           "player_id": "4881",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "zrek",
@@ -234,7 +234,7 @@
           "nfl_team": "JAX",
           "points": -2.0,
           "player_id": "JAX",
-          "completed": false
+          "completed": true
         }
       ],
       "empty_slots": [],
