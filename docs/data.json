@@ -184,7 +184,7 @@
           "nfl_team": "NO",
           "points": 0.0,
           "player_id": "7002",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "hcstone",
@@ -194,7 +194,7 @@
           "nfl_team": "HOU",
           "points": -2.0,
           "player_id": "HOU",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "zrek",
