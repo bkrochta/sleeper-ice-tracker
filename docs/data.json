@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-10-21T15:47:41.965337+00:00",
+  "updated_at": "2026-10-27T18:33:59.707930+00:00",
   "season": "2026",
-  "current_week": 7,
+  "current_week": 8,
   "display_week": 7,
   "season_type": "regular",
   "league_id": "1389722302718947328",
@@ -11,7 +11,8 @@
     3,
     4,
     5,
-    6
+    6,
+    7
   ],
   "history": {
     "1": {
@@ -235,6 +236,52 @@
           "points": -2.0,
           "player_id": "JAX",
           "completed": true
+        }
+      ],
+      "empty_slots": [],
+      "finalized": true
+    },
+    "7": {
+      "ices": [
+        {
+          "owner": "hcstone",
+          "roster_id": 4,
+          "player": "Houston Texans",
+          "position": "DEF",
+          "nfl_team": "HOU",
+          "points": 0.0,
+          "player_id": "HOU",
+          "completed": false
+        },
+        {
+          "owner": "zrek",
+          "roster_id": 5,
+          "player": "Kansas City Chiefs",
+          "position": "DEF",
+          "nfl_team": "KC",
+          "points": 0.0,
+          "player_id": "KC",
+          "completed": false
+        },
+        {
+          "owner": "bkrochta",
+          "roster_id": 6,
+          "player": "New York Jets",
+          "position": "DEF",
+          "nfl_team": "NYJ",
+          "points": 0.0,
+          "player_id": "NYJ",
+          "completed": false
+        },
+        {
+          "owner": "graywhite4",
+          "roster_id": 8,
+          "player": "Baltimore Ravens",
+          "position": "DEF",
+          "nfl_team": "BAL",
+          "points": -3.0,
+          "player_id": "BAL",
+          "completed": false
         }
       ],
       "empty_slots": [],
