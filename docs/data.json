@@ -271,7 +271,7 @@
           "nfl_team": "NYJ",
           "points": 0.0,
           "player_id": "NYJ",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "graywhite4",
