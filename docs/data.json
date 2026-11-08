@@ -282,7 +282,7 @@
           "nfl_team": "BAL",
           "points": -3.0,
           "player_id": "BAL",
-          "completed": false
+          "completed": true
         }
       ],
       "empty_slots": [],
@@ -298,7 +298,7 @@
           "nfl_team": "NYJ",
           "points": 0.0,
           "player_id": "13276",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "zrek",
@@ -318,7 +318,7 @@
           "nfl_team": "BAL",
           "points": 0.0,
           "player_id": "9997",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "graywhite4",
@@ -328,7 +328,7 @@
           "nfl_team": "SEA",
           "points": -0.25,
           "player_id": "2747",
-          "completed": false
+          "completed": true
         },
         {
           "owner": "kevinchiat",
@@ -338,7 +338,7 @@
           "nfl_team": "LV",
           "points": 0.0,
           "player_id": "10213",
-          "completed": false
+          "completed": true
         }
       ],
       "empty_slots": [],
