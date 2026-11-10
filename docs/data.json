@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-11-04T19:14:03.995620+00:00",
+  "updated_at": "2026-11-10T20:42:32.385757+00:00",
   "season": "2026",
-  "current_week": 9,
+  "current_week": 10,
   "display_week": 9,
   "season_type": "regular",
   "league_id": "1389722302718947328",
@@ -13,7 +13,8 @@
     5,
     6,
     7,
-    8
+    8,
+    9
   ],
   "history": {
     "1": {
@@ -339,6 +340,42 @@
           "points": 0.0,
           "player_id": "10213",
           "completed": true
+        }
+      ],
+      "empty_slots": [],
+      "finalized": true
+    },
+    "9": {
+      "ices": [
+        {
+          "owner": "zrek",
+          "roster_id": 5,
+          "player": "Ladd McConkey",
+          "position": "WR",
+          "nfl_team": "LAC",
+          "points": 0.0,
+          "player_id": "11635",
+          "completed": false
+        },
+        {
+          "owner": "CEEJDUDE",
+          "roster_id": 7,
+          "player": "George Pickens",
+          "position": "WR",
+          "nfl_team": "DAL",
+          "points": 0.0,
+          "player_id": "8137",
+          "completed": false
+        },
+        {
+          "owner": "CEEJDUDE",
+          "roster_id": 7,
+          "player": "New England Patriots",
+          "position": "DEF",
+          "nfl_team": "NE",
+          "points": -5.0,
+          "player_id": "NE",
+          "completed": false
         }
       ],
       "empty_slots": [],
