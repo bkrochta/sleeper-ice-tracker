@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-11-11T19:08:28.960457+00:00",
+  "updated_at": "2026-11-17T22:02:23.888500+00:00",
   "season": "2026",
-  "current_week": 10,
+  "current_week": 11,
   "display_week": 10,
   "season_type": "regular",
   "league_id": "1389722302718947328",
@@ -14,7 +14,8 @@
     6,
     7,
     8,
-    9
+    9,
+    10
   ],
   "history": {
     "1": {
@@ -375,6 +376,22 @@
           "nfl_team": "NE",
           "points": -5.0,
           "player_id": "NE",
+          "completed": false
+        }
+      ],
+      "empty_slots": [],
+      "finalized": true
+    },
+    "10": {
+      "ices": [
+        {
+          "owner": "pathenny",
+          "roster_id": 2,
+          "player": "Omar Cooper Jr.",
+          "position": "WR",
+          "nfl_team": "NYJ",
+          "points": 0.0,
+          "player_id": "13276",
           "completed": false
         }
       ],
